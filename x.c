@@ -162,6 +162,8 @@ static void xhints(void);
 static int xloadcolor(int, const char *, Color *);
 static int xloadfont(Font *, FcPattern *);
 static void xloadfonts(char *, double);
+static void xloadifonts(char *, double);
+static void xloadbfonts(char *, double);
 static void xunloadfont(Font *);
 static void xunloadfonts(void);
 static void xsetenv(void);
@@ -242,6 +244,8 @@ typedef struct {
 static Fontcache frc[16];
 static int frclen = 0;
 static char *usedfont = NULL;
+static char *usedifont = NULL;
+static char *usedbfont = NULL;
 static double usedfontsize = 0;
 static double defaultfontsize = 0;
 
@@ -1003,15 +1007,42 @@ xloadfonts(char *fontstr, double fontsize)
 	win.ch = ceilf(dc.font.height * chscale);
 	win.cyo = ceilf(dc.font.height * (chscale - 1) / 2);
 
+	FcPatternDestroy(pattern);
+}
+
+void
+xloadifonts(char *fontstr, double fontsize)
+{
+	FcPattern *pattern;
+	double fontval;
+
+	if (fontstr[0] == '-') {
+		pattern = XftXlfdParse(fontstr, False, False);
+	} else {
+		pattern = FcNameParse((FcChar8 *)fontstr);
+	}
+
 	FcPatternDel(pattern, FC_SLANT);
+	FcPatternDel(pattern, FC_WEIGHT);
 	FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ITALIC);
+	FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_LIGHT);
 	if (xloadfont(&dc.ifont, pattern))
 		die("st: can't open font %s\n", fontstr);
 
-	FcPatternDel(pattern, FC_WEIGHT);
-	FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
-	if (xloadfont(&dc.ibfont, pattern))
-		die("st: can't open font %s\n", fontstr);
+	FcPatternDestroy(pattern);
+}
+
+void
+xloadbfonts(char *fontstr, double fontsize)
+{
+	FcPattern *pattern;
+	double fontval;
+
+	if (fontstr[0] == '-') {
+		pattern = XftXlfdParse(fontstr, False, False);
+	} else {
+		pattern = FcNameParse((FcChar8 *)fontstr);
+	}
 
 	FcPatternDel(pattern, FC_SLANT);
 	FcPatternAddInteger(pattern, FC_SLANT, FC_SLANT_ROMAN);
@@ -1093,7 +1124,11 @@ xinit(int cols, int rows)
 		die("Could not init fontconfig.\n");
 
 	usedfont = (opt_font == NULL)? font : opt_font;
+	usedifont = (opt_font == NULL)? italicFont : opt_font;
+	usedbfont = (opt_font == NULL)? boldFont : opt_font;
 	xloadfonts(usedfont, 0);
+	xloadifonts(usedifont, 0);
+	xloadbfonts(usedbfont, 0);
 
 	/* colors */
 	if (!USE_ARGB)

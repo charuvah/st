@@ -6,6 +6,8 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 static char *font = "mono:pixelsize=16:antialias=true:autohint=true";
+static char *boldFont = "mono:pixelsize=16:antialias=true:autohint=true:Bold";
+static char *italicFont = "mono:pixelsize=16:antialias=true:autohint=true:Italic";
 static int borderpx = 2;
 
 /*
@@ -153,7 +155,8 @@ static unsigned int defaultattr = 11;
  */
 ResourcePref resources[] = {
 		{ "font",         STRING,  &font },
-		{ "boldFont",     STRING,  &font },
+		{ "boldFont",     STRING,  &boldFont },
+		{ "italicFont",   STRING,  &italicFont },
 		{ "color0",       STRING,  &colorname[0] },
 		{ "color1",       STRING,  &colorname[1] },
 		{ "color2",       STRING,  &colorname[2] },
